@@ -7,6 +7,7 @@
 // ==================== 全局配置 ====================
 const HBTI_CONFIG = {
   version: '2.0',
+  domain: 'hbti.top',
   dimensions: ['能量取向', '行动模式', '自然联结', '耐受风格'],
   dimensionCodes: ['S/G', 'P/F', 'C/B', 'H/S'],
   threshold: 3.5, // 判定阈值

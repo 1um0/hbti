@@ -322,7 +322,7 @@
         copyButton.addEventListener('click', function() {
           const typeCode = document.getElementById('type-code').textContent;
           const typeName = document.getElementById('type-name').textContent;
-          const textToCopy = `我的HBTI徒步人格是：${typeCode} ${typeName}，快来测测你是哪一型：mengmeng.icu`;
+          const textToCopy = `我的HBTI徒步人格是：${typeCode} ${typeName}，快来测测你是哪一型：${window.HBTI.CONFIG.domain}`;
 
           navigator.clipboard.writeText(textToCopy).then(() => {
             alert('结果已复制到剪贴板！');
