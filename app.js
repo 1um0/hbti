@@ -1,7 +1,7 @@
 /**
- * HBTI徒步人格测试 - 核心逻辑脚本
+ * hbti徒步人格测试 - 核心逻辑脚本
  * 版本: 2.0
- * 功能: 36题测试、自动计分、人格判定、结果展示
+ * 功能: 32题测试、自动计分、人格判定、结果展示
  */
 
 // ==================== 全局配置 ====================
@@ -10,57 +10,64 @@ const HBTI_CONFIG = {
   domain: 'hbti.top',
   dimensions: ['能量取向', '行动模式', '自然联结', '耐受风格'],
   dimensionCodes: ['S/G', 'P/F', 'C/B', 'H/S'],
-  threshold: 3.5, // 判定阈值
-  questionsPerDimension: 9,
-  totalQuestions: 36
+  threshold: 3.5, // 判定阈值：平均分 >= 3.5 判定前字母，否则后字母
+  scoreScale: { min: 1, max: 5 },
+  reverseScoringEnabled: true,
+  storageKeys: {
+    result: 'hbti_result',
+    answers: 'hbti_answers',
+    draftAnswers: 'hbti_draft_answers'
+  },
+  apiEndpoints: {
+    submitResult: 'https://submitresult-melkcrmbnb.cn-hangzhou.fcapp.run',
+    getStats: 'https://getstats-dytffsjluv.cn-hangzhou.fcapp.run'
+  },
+  questionsPerDimension: 8,
+  totalQuestions: 32
 };
 
 // ==================== 题目数据 ====================
-// 包含36道题的完整数据：文本、维度、反向标识
+// 包含32道题的完整数据：文本、维度、反向标识
 const QUESTIONS = [
-  // 维度1: 能量取向 (S/G) - 题1-9
-  { id: 1, text: '我更喜欢一个人徒步，无需迁就任何人的节奏', dimension: 0, reverse: false },
-  { id: 2, text: '徒步时和队友聊天互动，会让我更有幸福感', dimension: 0, reverse: false },
-  { id: 3, text: '遇到陌生驴友，我倾向于安静同行，不主动搭话', dimension: 0, reverse: true },
-  { id: 4, text: '我愿意为了和朋友组队，妥协自己心仪的徒步路线', dimension: 0, reverse: false },
-  { id: 5, text: '徒步休息时，我偏爱独自看风景，而非群体打闹', dimension: 0, reverse: false },
-  { id: 6, text: '人多热闹的徒步团，比独行更能让我感到放松', dimension: 0, reverse: true },
-  { id: 7, text: '我拒绝无意义的徒步社交，只想专注山野本身', dimension: 0, reverse: false },
-  { id: 8, text: '徒步结束后，和队友分享照片、复盘行程会让我满足', dimension: 0, reverse: true },
-  { id: 9, text: '独自徒步时，我的精神状态是最放松、最自在的', dimension: 0, reverse: false },
+  // 维度0: 能量取向 (S独行 / G结伴) —— 题1-8
+  { id: 1, text: '长线徒步中，独自掌控节奏会让我更安心', dimension: 0, reverse: false },
+  { id: 2, text: '途中持续社交聊天，会分散我对山野的注意力', dimension: 0, reverse: false },
+  { id: 3, text: '团队徒步时，我愿意主动协调节奏、照应同行伙伴', dimension: 0, reverse: true },
+  { id: 4, text: '临时只剩一人，我也会按原计划独立完成路线', dimension: 0, reverse: false },
+  { id: 5, text: '休息时我偏好安静独处，优先恢复体力而非闲聊', dimension: 0, reverse: false },
+  { id: 6, text: '我乐于在徒步社群分享轨迹、攻略与出行经验', dimension: 0, reverse: true },
+  { id: 7, text: '徒步结束后，我更想独自消化体验，而非立刻复盘社交', dimension: 0, reverse: false },
+  { id: 8, text: '山野偶遇同路人，我保持礼貌距离，不主动结伴同行', dimension: 0, reverse: false },
 
-  // 维度2: 行动模式 (P/F) - 题10-18
-  { id: 10, text: '出发前我会制定详细攻略（轨迹/补给/爬升/时间）', dimension: 1, reverse: false },
-  { id: 11, text: '我喜欢说走就走的徒步，不做任何提前准备', dimension: 1, reverse: true },
-  { id: 12, text: '徒步中严格按照既定路线走，绝不随意偏离轨迹', dimension: 1, reverse: false },
-  { id: 13, text: '遇到封路/迷路，我会随缘改道，不执着于原计划', dimension: 1, reverse: true },
-  { id: 14, text: '我会列装备清单，精准打包，绝不遗漏任何必需品', dimension: 1, reverse: false },
-  { id: 15, text: '徒步节奏随心所欲，累了就停，想走就走，无时间限制', dimension: 1, reverse: true },
-  { id: 16, text: '我会提前预判天气/风险，制定备用徒步方案', dimension: 1, reverse: false },
-  { id: 17, text: '我讨厌被攻略束缚，享受未知路线带来的新鲜感', dimension: 1, reverse: true },
-  { id: 18, text: '团队徒步时，我习惯主动规划全员行程与节奏', dimension: 1, reverse: false },
+  // 维度1: 行动模式 (P规划 / F随性) —— 题9-16
+  { id: 9, text: '出发前我会明确返程时间、下撤点与安全边界', dimension: 1, reverse: false },
+  { id: 10, text: '我会提前查询山区小气候，规避降雨、大风等高风险', dimension: 1, reverse: false },
+  { id: 11, text: '行程被打乱时，我更愿意顺着现场情况灵活调整', dimension: 1, reverse: true },
+  { id: 12, text: '前一晚我会分层打包装备，核对急救、照明等刚需物资', dimension: 1, reverse: false },
+  { id: 13, text: '我习惯记录关键路标，降低迷路与回程判断失误', dimension: 1, reverse: false },
+  { id: 14, text: '只要大方向正确，我不会严格卡点执行行程时间', dimension: 1, reverse: true },
+  { id: 15, text: '我会为天气、封路等突发情况，准备至少一套备选方案', dimension: 1, reverse: false },
+  { id: 16, text: '临时起意改线探索，比严格执行原计划更吸引我', dimension: 1, reverse: true },
 
-  // 维度3: 自然联结 (C/B) - 题19-27
-  { id: 19, text: '徒步的核心目标是登顶、刷里程、挑战高难度路线', dimension: 2, reverse: false },
-  { id: 20, text: '我不在乎是否登顶，只想沉浸式感受山野的风与草木', dimension: 2, reverse: true },
-  { id: 21, text: '看到陡坡/野路/高爬升，我会感到兴奋，想要征服', dimension: 2, reverse: false },
-  { id: 22, text: '绝美风景前，我会长时间停留放空，而非赶路打卡', dimension: 2, reverse: true },
-  { id: 23, text: '我热衷于打卡小众虐线、解锁徒步成就与地标', dimension: 2, reverse: false },
-  { id: 24, text: '徒步是为了逃离城市，和自然共生，而非自我挑战', dimension: 2, reverse: true },
-  { id: 25, text: '完成高难度徒步，比欣赏风景更能让我有成就感', dimension: 2, reverse: false },
-  { id: 26, text: '我偏爱慢节奏徒步，用心感受环境，不追求速度', dimension: 2, reverse: true },
-  { id: 27, text: '我会主动选择有挑战性的路线，拒绝平淡的休闲线', dimension: 2, reverse: false },
+  // 维度2: 自然联结 (C征服 / B沉浸) —— 题17-24
+  { id: 17, text: '看到高爬升、技术路段，我会想挑战自身体能上限', dimension: 2, reverse: false },
+  { id: 18, text: '我会驻足观察山野植被、地貌，享受自然细节带来的治愈', dimension: 2, reverse: true },
+  { id: 19, text: '规划路线时，我优先选择有挑战性、能突破自我的线路', dimension: 2, reverse: false },
+  { id: 20, text: '未登顶也无妨，全程的沉浸体验比结果更重要', dimension: 2, reverse: true },
+  { id: 21, text: '完成高难度线路的成就感，远大于拍照打卡的快乐', dimension: 2, reverse: false },
+  { id: 22, text: '我偏爱舒缓节奏，愿意为风景多次停留、放慢脚步', dimension: 2, reverse: true },
+  { id: 23, text: '我主动探索峡谷、山脊等小众地形，追求山野掌控感', dimension: 2, reverse: false },
+  { id: 24, text: '比起里程与高度，我更在意山野里的情绪稳定与松弛感', dimension: 2, reverse: true },
 
-  // 维度4: 耐受风格 (H/S) - 题28-36
-  { id: 28, text: '我优先选择重装、长距离、高爬升的硬核虐线', dimension: 3, reverse: false },
-  { id: 29, text: '徒步主打舒适，平路、短距离的轻徒步是我的首选', dimension: 3, reverse: true },
-  { id: 30, text: '为了完成路线，我可以忍受饥饿、疲惫、恶劣天气', dimension: 3, reverse: false },
-  { id: 31, text: '累了就果断下撤，绝不硬撑，体验感比完赛更重要', dimension: 3, reverse: true },
-  { id: 32, text: '我偏爱专业轻量化硬核装备，性能优先于颜值舒适', dimension: 3, reverse: false },
-  { id: 33, text: '我选择装备只看颜值与舒适度，拒绝笨重专业装备', dimension: 3, reverse: true },
-  { id: 34, text: '我享受徒步带来的身体极限感，越虐越有满足感', dimension: 3, reverse: false },
-  { id: 35, text: '我拒绝暴晒、淋雨、爬坡，只选舒适友好的徒步场景', dimension: 3, reverse: true },
-  { id: 36, text: '轻度休闲徒步，会让我觉得毫无挑战性、索然无味', dimension: 3, reverse: false }
+  // 维度3: 耐受风格 (H硬核 / S轻享) —— 题25-32
+  { id: 25, text: '为完成目标，我可以接受连续高强度爬升与紧凑节奏', dimension: 3, reverse: false },
+  { id: 26, text: '天气路况变差时，我优先保障体验，绝不勉强硬撑', dimension: 3, reverse: true },
+  { id: 27, text: '我愿意为轻量化减重，牺牲少量行进舒适性', dimension: 3, reverse: false },
+  { id: 28, text: '身体轻微不适时，我会果断下撤，不执着于完赛', dimension: 3, reverse: true },
+  { id: 29, text: '我能接受早出晚归，为优质风景压缩休息时间', dimension: 3, reverse: false },
+  { id: 30, text: '我优先选择阴凉平缓路段，规避暴晒与连续陡坡', dimension: 3, reverse: true },
+  { id: 31, text: '长距离徒步中，我能稳定控速，坚持完成计划行程', dimension: 3, reverse: false },
+  { id: 32, text: '比起突破极限，我更看重徒步后的身体恢复与舒适感', dimension: 3, reverse: true }
 ];
 
 // ==================== 人格类型数据 ====================
@@ -329,7 +336,7 @@ function calculateHBTI(answers) {
       let score = parseInt(answer);
 
       // 处理反向题
-      if (question.reverse) {
+      if (HBTI_CONFIG.reverseScoringEnabled && question.reverse) {
         score = reverseScore(score);
       }
 
@@ -380,14 +387,10 @@ function calculateHBTI(answers) {
  * @returns {number} 反转后的分数
  */
 function reverseScore(score) {
-  switch(score) {
-    case 1: return 5;
-    case 2: return 4;
-    case 3: return 3;
-    case 4: return 2;
-    case 5: return 1;
-    default: return score;
-  }
+  const min = HBTI_CONFIG.scoreScale.min;
+  const max = HBTI_CONFIG.scoreScale.max;
+  if (score < min || score > max) return score;
+  return max + min - score;
 }
 
 /**
@@ -429,11 +432,36 @@ function calculateScore() {
   }
 
   // 保存结果到本地存储，然后跳转到结果页
-  localStorage.setItem('hbti_result', JSON.stringify(result));
-  localStorage.setItem('hbti_answers', JSON.stringify(answers));
+  localStorage.setItem(HBTI_CONFIG.storageKeys.result, JSON.stringify(result));
+  localStorage.setItem(HBTI_CONFIG.storageKeys.answers, JSON.stringify(answers));
+  localStorage.removeItem(HBTI_CONFIG.storageKeys.draftAnswers);
 
-  // 跳转到结果页
-  window.location.href = 'result.html';
+  const submitUrl = HBTI_CONFIG.apiEndpoints && HBTI_CONFIG.apiEndpoints.submitResult
+    ? HBTI_CONFIG.apiEndpoints.submitResult
+    : '';
+
+  const submitResultToServer = submitUrl
+    ? fetch(submitUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type: result.code })
+      }).then(async response => {
+        if (!response.ok) {
+          const responseText = await response.text().catch(() => '');
+          throw new Error(responseText || `HTTP ${response.status}`);
+        }
+        return response.json().catch(() => ({}));
+      }).catch(error => {
+        console.warn('submitResult 上报失败:', error);
+      })
+    : Promise.resolve();
+
+  submitResultToServer.finally(() => {
+    // 跳转到结果页
+    window.location.href = 'result.html';
+  });
 }
 
 function clamp(value, min, max) {
@@ -816,7 +844,7 @@ function displayPersonalityResult() {
   renderHikingAdvice(result.code);
 
   // 更新页面标题
-  document.title = `HBTI结果 - ${result.code} ${personality.name}｜徒步人格测试`;
+  document.title = `hbti结果 - ${result.code} ${personality.name}｜徒步人格测试`;
 }
 
 /**
@@ -913,6 +941,6 @@ if (window.location.pathname.includes('result.html')) {
 }
 
 // 控制台提示
-console.log('HBTI徒步人格测试核心脚本已加载');
+console.log('hbti徒步人格测试核心脚本已加载');
 console.log('版本:', HBTI_CONFIG.version);
 console.log('可用函数: window.HBTI.calculateScore(), window.HBTI.displayPersonalityResult()');

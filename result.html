@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HBTI测试结果｜你的徒步人格</title>
+  <title>hbti测试结果｜你的徒步人格</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -303,11 +303,35 @@
           </div>
         </div>
       </div>
+
+      <!-- 全站统计 -->
+      <div class="bg-slate-900 text-white rounded-2xl shadow-xl p-8 mt-10 mb-10">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold">全站统计</h2>
+          <span class="text-sm text-slate-300">实时读取统计接口</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-white/10 rounded-xl p-5 border border-white/10">
+            <p class="text-sm text-slate-300 mb-2">全站总样本数</p>
+            <p id="global-total-samples" class="text-3xl font-black">-</p>
+          </div>
+          <div class="bg-white/10 rounded-xl p-5 border border-white/10">
+            <p class="text-sm text-slate-300 mb-2">当前类型占比</p>
+            <p id="global-current-ratio" class="text-3xl font-black">-</p>
+          </div>
+          <div class="bg-white/10 rounded-xl p-5 border border-white/10">
+            <p class="text-sm text-slate-300 mb-2">当前类型稀有度</p>
+            <p id="global-current-rarity" class="text-3xl font-black">-</p>
+          </div>
+        </div>
+        <p id="global-stats-note" class="mt-4 text-sm text-slate-300">正在加载统计数据…</p>
+      </div>
     </main>
 
     <!-- 页脚 -->
     <footer class="mt-12 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
-      <p>© 2026 HBTI徒步人格测试 | 基于户外行为心理学原创 | 测试结果仅供参考</p>
+      <p>© 2026 hbti徒步人格测试 | 原创作者：lumo | 原创题库与人格文案，禁止未授权搬运</p>
+      <p class="mt-2">联系方式：1953430@tongji.edu.cn</p>
       <p class="mt-2">本测试使用纯前端技术实现，数据仅在本地处理，保护用户隐私</p>
     </footer>
   </div>
@@ -317,17 +341,73 @@
   <script>
     // 本地脚本：分享功能和动画
     document.addEventListener('DOMContentLoaded', function() {
+      const statsEndpoint = window.HBTI && window.HBTI.CONFIG && window.HBTI.CONFIG.apiEndpoints
+        ? window.HBTI.CONFIG.apiEndpoints.getStats
+        : '';
+
       const copyButton = document.getElementById('copy-result-btn');
       if (copyButton) {
         copyButton.addEventListener('click', function() {
           const typeCode = document.getElementById('type-code').textContent;
           const typeName = document.getElementById('type-name').textContent;
-          const textToCopy = `我的HBTI徒步人格是：${typeCode} ${typeName}，快来测测你是哪一型：${window.HBTI.CONFIG.domain}`;
+          const textToCopy = `我的hbti徒步人格是：${typeCode} ${typeName}，快来测测你是哪一型：${window.HBTI.CONFIG.domain}`;
 
           navigator.clipboard.writeText(textToCopy).then(() => {
             alert('结果已复制到剪贴板！');
           });
         });
+      }
+
+      async function renderGlobalStats(personalityCode) {
+        const totalSamplesEl = document.getElementById('global-total-samples');
+        const currentRatioEl = document.getElementById('global-current-ratio');
+        const currentRarityEl = document.getElementById('global-current-rarity');
+        const statsNoteEl = document.getElementById('global-stats-note');
+
+        if (!statsEndpoint) {
+          if (statsNoteEl) {
+            statsNoteEl.textContent = '尚未配置统计接口地址，请在 app.js 的 HBTI_CONFIG.apiEndpoints.getStats 中填写。';
+          }
+          return;
+        }
+
+        try {
+          const response = await fetch(statsEndpoint, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const payload = await response.json();
+          if (!payload || !payload.ok) {
+            throw new Error(payload && payload.error ? payload.error : '统计接口返回异常');
+          }
+
+          const total = Number(payload.total || 0);
+          const ratio = payload.ratios && payload.ratios[personalityCode] != null ? Number(payload.ratios[personalityCode]) : 0;
+          const rarityInfo = payload.rarityByType && payload.rarityByType[personalityCode] ? payload.rarityByType[personalityCode] : null;
+
+          if (totalSamplesEl) totalSamplesEl.textContent = total.toString();
+          if (currentRatioEl) currentRatioEl.textContent = `${(ratio * 100).toFixed(2)}%`;
+          if (currentRarityEl) currentRarityEl.textContent = rarityInfo ? rarityInfo.label : '未知';
+          if (statsNoteEl) {
+            statsNoteEl.textContent = rarityInfo
+              ? `样本越多，这个数值越稳定。当前类型约占全站 ${(ratio * 100).toFixed(2)}%，属于 ${rarityInfo.label}。`
+              : '已读取全站统计，但当前类型暂无稀有度数据。';
+          }
+        } catch (error) {
+          console.warn('读取全站统计失败:', error);
+          if (statsNoteEl) {
+            statsNoteEl.textContent = '暂时无法读取全站统计，请稍后再试。';
+          }
+          if (currentRatioEl) currentRatioEl.textContent = '—';
+          if (currentRarityEl) currentRarityEl.textContent = '—';
+        }
       }
 
       // 添加一些动画效果
@@ -342,6 +422,18 @@
           card.style.transform = 'translateY(0)';
         }, 100 * index);
       });
+
+      const loadedResult = localStorage.getItem('hbti_result');
+      if (loadedResult) {
+        try {
+          const parsedResult = JSON.parse(loadedResult);
+          if (parsedResult && parsedResult.code) {
+            renderGlobalStats(parsedResult.code);
+          }
+        } catch (error) {
+          console.warn('读取本地结果失败:', error);
+        }
+      }
     });
   </script>
 </body>
