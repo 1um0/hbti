@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HBTI徒步人格测试｜山野专属人格测试</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .bg-mountain {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 py-12 max-w-4xl">
+    <!-- 头部 -->
+    <header class="text-center mb-12">
+      <h1 class="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-mountain">HBTI 徒步人格测试</h1>
+      <p class="text-xl text-gray-600 mb-8">Hiking Behavioral Type Indicator｜徒步圈专属SBTI风人格测试</p>
+      <div class="inline-block px-6 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-8">
+        36题 · 5分钟 · 16种人格
+      </div>
+    </header>
+
+    <!-- 介绍区域 -->
+    <div class="bg-white rounded-2xl shadow-xl p-8 mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h2 class="text-2xl font-bold mb-4 text-gray-800"><i class="fas fa-mountain text-blue-500 mr-2"></i>什么是HBTI？</h2>
+          <p class="text-gray-600 mb-4">
+            HBTI是基于户外行为心理学、群体社交习惯原创的徒步人格测试，通过36道5分量表题，测出你的4字母徒步人格。
+          </p>
+          <p class="text-gray-600">
+            文案戏谑扎心、徒步圈黑话拉满，不正经但巨准，帮你找到最匹配的徒步搭子！
+          </p>
+        </div>
+        <div>
+          <h2 class="text-2xl font-bold mb-4 text-gray-800"><i class="fas fa-cogs text-green-500 mr-2"></i>四大核心维度</h2>
+          <ul class="space-y-3">
+            <li class="flex items-center"><span class="inline-block w-6 h-6 bg-blue-500 text-white rounded-full text-center mr-2 text-sm leading-6">S/G</span> 能量维度：独行 vs 结伴</li>
+            <li class="flex items-center"><span class="inline-block w-6 h-6 bg-green-500 text-white rounded-full text-center mr-2 text-sm leading-6">P/F</span> 行动模式：规划 vs 随性</li>
+            <li class="flex items-center"><span class="inline-block w-6 h-6 bg-yellow-500 text-white rounded-full text-center mr-2 text-sm leading-6">C/B</span> 自然联结：征服 vs 沉浸</li>
+            <li class="flex items-center"><span class="inline-block w-6 h-6 bg-red-500 text-white rounded-full text-center mr-2 text-sm leading-6">H/S</span> 耐受风格：硬核 vs 轻享</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 开始测试按钮 -->
+    <div class="text-center">
+      <a href="test.html" class="btn-primary text-white px-12 py-4 rounded-full text-xl font-bold inline-block shadow-lg">
+        <i class="fas fa-hiking mr-2"></i>开始测试
+      </a>
+      <p class="mt-4 text-gray-500">点击开始，解锁你的山野人格</p>
+    </div>
+
+    <!-- 底部 -->
+    <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
+      <p>© 2026 HBTI徒步人格测试 | 基于户外行为心理学原创 | 仅供娱乐参考</p>
+      <p class="mt-2">本测试使用前端技术实现，无需后端服务器，数据仅在本地处理</p>
+    </footer>
+  </div>
+
+  <script>
+    // 简单的动画效果
+    document.addEventListener('DOMContentLoaded', function() {
+      const title = document.querySelector('h1');
+      title.style.opacity = '0';
+      title.style.transform = 'translateY(20px)';
+
+      setTimeout(() => {
+        title.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+        title.style.opacity = '1';
+        title.style.transform = 'translateY(0)';
+      }, 300);
+    });
+  </script>
+</body>
+</html>

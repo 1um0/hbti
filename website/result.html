@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HBTI测试结果｜你的徒步人格</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .personality-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 24px;
+    }
+    .dimension-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .type-letter {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0 4px;
+    }
+    .share-btn {
+      transition: all 0.3s ease;
+    }
+    .share-btn:hover {
+      transform: translateY(-3px);
+    }
+    .fade-in {
+      animation: fadeIn 0.8s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 py-8 max-w-5xl">
+    <!-- 返回按钮 -->
+    <header class="mb-8">
+      <div class="flex justify-between items-center">
+        <a href="index.html" class="text-blue-500 hover:text-blue-700 font-medium">
+          <i class="fas fa-home mr-2"></i>返回首页
+        </a>
+        <a href="test.html" class="text-blue-500 hover:text-blue-700 font-medium">
+          <i class="fas fa-redo mr-2"></i>重新测试
+        </a>
+      </div>
+    </header>
+
+    <!-- 主要结果区域 -->
+    <main class="fade-in">
+      <!-- 人格代码卡片 -->
+      <div class="personality-card p-8 mb-10 shadow-2xl">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div>
+            <h1 class="text-4xl font-bold mb-2">你的徒步人格是</h1>
+            <div class="flex items-center mb-4">
+              <div id="type-code" class="text-6xl font-black tracking-wider mr-4">SPCH</div>
+              <div class="bg-white/20 px-4 py-2 rounded-full">
+                <span id="type-name" class="font-bold">孤狼征服者</span>
+              </div>
+            </div>
+            <p id="type-nickname" class="text-white/90 text-lg">外号：徒步卷王·山顶独逼</p>
+          </div>
+          <div class="mt-6 md:mt-0 w-full md:w-80 lg:w-96">
+            <img
+              id="type-image"
+              src="assets/images/SPCH.jpg"
+              alt="SPCH 孤狼征服者"
+              class="w-full max-h-[620px] object-contain rounded-2xl border border-white/30 shadow-lg mb-4"
+            >
+            <div class="bg-white/20 p-4 rounded-2xl">
+              <div class="text-center">
+                <div class="text-2xl font-bold">山野匹配度</div>
+                <div id="mountain-match-score" class="text-5xl font-black mt-2">92%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 人格描述 -->
+      <div class="bg-white rounded-2xl shadow-xl p-8 mb-10">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+          <i class="fas fa-quote-left text-blue-500 mr-3"></i>解析
+        </h2>
+        <div id="type-description" class="text-gray-700 text-lg leading-relaxed p-6 bg-gray-50 rounded-xl border-l-4 border-blue-500">
+          别人徒步散心，你徒步渡劫。重装虐线单人冲，攻略比论文细，零社交零废话，登顶只发一个句号，山见了你都得立正。
+        </div>
+        <div class="mt-6 flex items-center text-gray-500">
+          <i class="fas fa-info-circle mr-2"></i>
+          <span class="text-sm">仅供娱乐参考，不具实际价值</span>
+        </div>
+      </div>
+
+      <!-- 四维度分析 -->
+      <div class="bg-white rounded-2xl shadow-xl p-8 mb-10">
+        <h2 class="text-2xl font-bold mb-8 text-gray-800">四维度详细分析</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- 维度1 -->
+          <div class="dimension-card p-6 rounded-xl border border-blue-200">
+            <div class="flex items-center mb-4">
+              <div id="dim-letter-0" class="type-letter bg-blue-500 text-white">S</div>
+              <div class="ml-4">
+                <h3 class="font-bold text-gray-800">能量维度</h3>
+                <p class="text-sm text-gray-600">独行 vs 结伴</p>
+              </div>
+            </div>
+            <p id="dim-desc-0" class="text-gray-700 mb-4">你倾向于独自徒步，在独处中恢复能量，无需社交互动也能获得满足感。</p>
+            <div class="text-sm">
+              <div class="flex justify-between mb-1">
+                <span id="dim-label-0">独行倾向</span>
+                <span id="dim-percent-0" class="font-bold">85%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="dim-bar-0" class="bg-blue-500 h-2 rounded-full" style="width: 85%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 维度2 -->
+          <div class="dimension-card p-6 rounded-xl border border-green-200">
+            <div class="flex items-center mb-4">
+              <div id="dim-letter-1" class="type-letter bg-green-500 text-white">P</div>
+              <div class="ml-4">
+                <h3 class="font-bold text-gray-800">行动模式</h3>
+                <p class="text-sm text-gray-600">规划 vs 随性</p>
+              </div>
+            </div>
+            <p id="dim-desc-1" class="text-gray-700 mb-4">你习惯详细规划徒步行程，注重攻略准备，行动前会制定明确的目标和路线。</p>
+            <div class="text-sm">
+              <div class="flex justify-between mb-1">
+                <span id="dim-label-1">规划倾向</span>
+                <span id="dim-percent-1" class="font-bold">78%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="dim-bar-1" class="bg-green-500 h-2 rounded-full" style="width: 78%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 维度3 -->
+          <div class="dimension-card p-6 rounded-xl border border-yellow-200">
+            <div class="flex items-center mb-4">
+              <div id="dim-letter-2" class="type-letter bg-yellow-500 text-white">C</div>
+              <div class="ml-4">
+                <h3 class="font-bold text-gray-800">自然联结</h3>
+                <p class="text-sm text-gray-600">征服 vs 沉浸</p>
+              </div>
+            </div>
+            <p id="dim-desc-2" class="text-gray-700 mb-4">你将徒步视为挑战，注重登顶和征服，追求成就感和路线难度带来的满足感。</p>
+            <div class="text-sm">
+              <div class="flex justify-between mb-1">
+                <span id="dim-label-2">征服倾向</span>
+                <span id="dim-percent-2" class="font-bold">91%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="dim-bar-2" class="bg-yellow-500 h-2 rounded-full" style="width: 91%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 维度4 -->
+          <div class="dimension-card p-6 rounded-xl border border-red-200">
+            <div class="flex items-center mb-4">
+              <div id="dim-letter-3" class="type-letter bg-red-500 text-white">H</div>
+              <div class="ml-4">
+                <h3 class="font-bold text-gray-800">耐受风格</h3>
+                <p class="text-sm text-gray-600">硬核 vs 轻享</p>
+              </div>
+            </div>
+            <p id="dim-desc-3" class="text-gray-700 mb-4">你偏好硬核徒步路线，享受身体挑战和极限体验，对艰苦条件有较高的耐受度。</p>
+            <div class="text-sm">
+              <div class="flex justify-between mb-1">
+                <span id="dim-label-3">硬核倾向</span>
+                <span id="dim-percent-3" class="font-bold">88%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="dim-bar-3" class="bg-red-500 h-2 rounded-full" style="width: 88%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 徒步搭子匹配 -->
+      <div class="bg-white rounded-2xl shadow-xl p-8 mb-10">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">最佳徒步搭子匹配</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-green-50 p-6 rounded-xl border border-green-300">
+            <h3 class="font-bold text-green-800 text-lg mb-3 flex items-center">
+              <i class="fas fa-heart mr-2"></i>神仙搭子
+            </h3>
+            <p id="best-principle" class="text-gray-700 mb-4">耐受一致（H↔H）+ 能量互补（S↔G），徒步节奏匹配，互不拖累，体验极佳。</p>
+            <div class="flex items-center">
+              <div class="bg-white p-3 rounded-lg mr-4">
+                <div id="best-code" class="text-2xl font-bold text-green-700">GPCH</div>
+                <div id="best-name" class="text-xs text-gray-600">领队征服者</div>
+              </div>
+              <div class="text-gray-600">
+                <p id="best-reason-title" class="font-medium">互补类型：能量维度互补</p>
+                <p id="best-reason-text" class="text-sm">对方的外向结伴特质能平衡你的独行倾向</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-red-50 p-6 rounded-xl border border-red-300">
+            <h3 class="font-bold text-red-800 text-lg mb-3 flex items-center">
+              <i class="fas fa-times-circle mr-2"></i>避雷组合
+            </h3>
+            <p id="avoid-principle" class="text-gray-700 mb-4">H硬核 × S轻享、P规划 × F随性，徒步必闹掰，谁走谁难受。</p>
+            <div class="flex items-center">
+              <div class="bg-white p-3 rounded-lg mr-4">
+                <div id="avoid-code" class="text-2xl font-bold text-red-700">SFBS</div>
+                <div id="avoid-name" class="text-xs text-gray-600">佛系独行人</div>
+              </div>
+              <div class="text-gray-600">
+                <p id="avoid-reason-title" class="font-medium">冲突类型：耐受风格冲突</p>
+                <p id="avoid-reason-text" class="text-sm">对方的轻享偏好与你的硬核风格严重不匹配</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 行动建议 -->
+      <div class="bg-blue-50 rounded-2xl p-8 mb-10">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">专属徒步建议</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <div class="text-blue-500 text-2xl mb-4">
+              <i class="fas fa-route"></i>
+            </div>
+            <h3 id="advice-route-title" class="font-bold text-gray-800 mb-3">推荐路线类型</h3>
+            <ul class="text-gray-600 space-y-2">
+              <li id="advice-route-1" class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>高难度单人重装线</li>
+              <li id="advice-route-2" class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>技术型山峰攀登</li>
+              <li id="advice-route-3" class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>偏远地区探索路线</li>
+              <li id="advice-route-4" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免盲目冲线导致风险上升</li>
+              <li id="advice-route-5" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免无备用方案就进高风险路段</li>
+              <li id="advice-route-6" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免忽视天气变化强行推进</li>
+            </ul>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <div class="text-blue-500 text-2xl mb-4">
+              <i class="fas fa-users"></i>
+            </div>
+            <h3 id="advice-team-title" class="font-bold text-gray-800 mb-3">组队建议</h3>
+            <ul class="text-gray-600 space-y-2">
+              <li id="advice-team-1" class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>优先选择单人徒步</li>
+              <li id="advice-team-2" class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>如需组队，寻找同样硬核的伙伴</li>
+              <li id="advice-team-3" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免与休闲型徒步者组队</li>
+              <li id="advice-team-4" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免节奏不一致强行捆绑</li>
+              <li id="advice-team-5" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免不沟通就临场改计划</li>
+              <li id="advice-team-6" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免角色职责不清造成混乱</li>
+            </ul>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <div class="text-blue-500 text-2xl mb-4">
+              <i class="fas fa-hiking"></i>
+            </div>
+            <h3 id="advice-gear-title" class="font-bold text-gray-800 mb-3">装备策略</h3>
+            <ul class="text-gray-600 space-y-2">
+              <li id="advice-gear-1" class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>投资专业轻量化装备</li>
+              <li id="advice-gear-2" class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i>注重装备性能和可靠性</li>
+              <li id="advice-gear-3" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>无需过度关注装备美观度</li>
+              <li id="advice-gear-4" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免过度负重拖垮体能</li>
+              <li id="advice-gear-5" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免缺少基础安全件</li>
+              <li id="advice-gear-6" class="flex items-center"><i class="fas fa-times text-red-500 mr-2"></i>避免补给配置与路线强度失配</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分享功能 -->
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">分享你的徒步人格</h2>
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <div class="mb-6 md:mb-0">
+            <p class="text-gray-700 mb-2">让朋友了解你的山野人格，找到匹配的徒步搭子</p>
+            <p class="text-sm text-gray-500">复制结果文案，一键发给朋友</p>
+          </div>
+          <div class="flex space-x-4">
+            <button id="copy-result-btn" class="share-btn bg-gray-800 text-white px-6 py-3 rounded-full font-medium hover:bg-black">
+              <i class="fas fa-copy mr-2"></i>复制结果
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="mt-12 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
+      <p>© 2026 HBTI徒步人格测试 | 基于户外行为心理学原创 | 测试结果仅供参考</p>
+      <p class="mt-2">本测试使用纯前端技术实现，数据仅在本地处理，保护用户隐私</p>
+    </footer>
+  </div>
+
+  <!-- 引入JS文件 -->
+  <script src="app.js"></script>
+  <script>
+    // 本地脚本：分享功能和动画
+    document.addEventListener('DOMContentLoaded', function() {
+      const copyButton = document.getElementById('copy-result-btn');
+      if (copyButton) {
+        copyButton.addEventListener('click', function() {
+          const typeCode = document.getElementById('type-code').textContent;
+          const typeName = document.getElementById('type-name').textContent;
+          const textToCopy = `我的HBTI徒步人格是：${typeCode} ${typeName}，快来测测你是哪一型：mengmeng.icu`;
+
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            alert('结果已复制到剪贴板！');
+          });
+        });
+      }
+
+      // 添加一些动画效果
+      const cards = document.querySelectorAll('.dimension-card, .bg-white');
+      cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+          card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, 100 * index);
+      });
+    });
+  </script>
+</body>
+</html>
