@@ -90,6 +90,11 @@ function parseBody(request) {
     }
   }
 
+  // If body is missing but request looks like a parsed body object with type, return it
+  if (request.body == null && request.type && typeof request.type === 'string') {
+    return request;
+  }
+
   return {};
 }
 
@@ -111,34 +116,37 @@ function parseEventBody(event) {
     }
   }
 
-  if (event.body == null) {
-    return {};
-  }
+  // If event has a body property, try to parse it
+  if (event.body != null) {
+    let raw = event.body;
 
-  let raw = event.body;
+    if (event.isBase64Encoded && typeof raw === 'string') {
+      try {
+        raw = Buffer.from(raw, 'base64').toString('utf8');
+      } catch (error) {
+        raw = '';
+      }
+    }
 
-  if (event.isBase64Encoded && typeof raw === 'string') {
-    try {
-      raw = Buffer.from(raw, 'base64').toString('utf8');
-    } catch (error) {
-      raw = '';
+    if (typeof raw === 'object') {
+      return raw;
+    }
+
+    if (typeof raw === 'string' && raw.trim()) {
+      try {
+        return JSON.parse(raw);
+      } catch (error) {
+        return {};
+      }
     }
   }
 
-  if (typeof raw === 'object') {
-    return raw;
+  // If event.body is null/undefined but event itself looks like a parsed body, return event
+  if (event.body == null && event.type && typeof event.type === 'string') {
+    return event;
   }
 
-  const text = String(raw || '');
-  if (!text.trim()) {
-    return {};
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch (error) {
-    return {};
-  }
+  return {};
 }
 
 function getMethod(request) {
