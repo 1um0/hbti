@@ -79,6 +79,10 @@ function parseBody(request) {
         return request.body;
       }
     }
+    // If body has nested 'body' object (some API Gateway formats)
+    if (typeof request.body.body === 'object' && request.body.body !== null) {
+      return request.body.body;
+    }
     return request.body;
   }
 
@@ -383,6 +387,10 @@ exports.handler = async (...args) => {
         gotMethod: method || '(empty)',
         bodyType: typeof body,
         bodyKeys: body && typeof body === 'object' ? Object.keys(body) : [],
+        bodyTypeValue: body && body.type,
+        requestBodyType: typeof (request && request.body),
+        hasBodyBody: !!(request && request.body && request.body.body),
+        requestBodyBodyType: request && request.body && typeof request.body.body,
         queryType: request && (
           (request.queryParameters && request.queryParameters.type) ||
           (request.queryStringParameters && request.queryStringParameters.type) ||
