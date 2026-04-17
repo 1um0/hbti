@@ -361,14 +361,6 @@ exports.handler = async (...args) => {
   const hasTypeInBody = body && typeof body.type === 'string' && body.type.trim().length > 0;
   const allowConsoleFallback = method === 'GET' && hasTypeInBody;
 
-  console.log('DEBUG parseBody result:', JSON.stringify({
-    bodyType: typeof body,
-    bodyKeys: body && typeof body === 'object' ? Object.keys(body) : [],
-    bodyType: body && body.type,
-    requestBodyType: typeof (request && request.body),
-    requestBodyBodyType: request && request.body && typeof request.body.body
-  }));
-
   if (method && method !== 'POST' && !allowConsoleFallback) {
     return sendJson(isWebShape ? response : null, 405, {
       ok: false,
@@ -387,12 +379,13 @@ exports.handler = async (...args) => {
       allowed: VALID_CODES,
       debug: {
         gotMethod: method || '(empty)',
+        isWebShape,
         bodyType: typeof body,
         bodyKeys: body && typeof body === 'object' ? Object.keys(body) : [],
         bodyTypeValue: body && body.type,
+        requestKeys: request && typeof request === 'object' ? Object.keys(request) : [],
         requestBodyType: typeof (request && request.body),
-        requestBodyBodyType: request && request.body && typeof request.body.body,
-        requestBodyBodyValue: request && request.body && request.body.body,
+        requestRawBody: typeof request === 'object' ? JSON.stringify(request.body).substring(0, 200) : String(request.body).substring(0, 200),
         queryType: request && (
           (request.queryParameters && request.queryParameters.type) ||
           (request.queryStringParameters && request.queryStringParameters.type) ||
