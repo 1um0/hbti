@@ -415,6 +415,7 @@ function getUserAnswers() {
  * 计算并显示结果
  */
 function calculateScore() {
+  console.log('calculateScore called');
   const answers = getUserAnswers();
 
   // 检查是否完成所有题目
@@ -425,6 +426,7 @@ function calculateScore() {
 
   // 计算HBTI结果
   const result = calculateHBTI(answers);
+  console.log('HBTI result:', result.code);
 
   if (!result.isValid) {
     alert('计算结果异常，请刷新页面重试。');
@@ -439,6 +441,7 @@ function calculateScore() {
   const submitUrl = HBTI_CONFIG.apiEndpoints && HBTI_CONFIG.apiEndpoints.submitResult
     ? HBTI_CONFIG.apiEndpoints.submitResult
     : '';
+  console.log('submitUrl:', submitUrl);
 
   const submitResultToServer = submitUrl
     ? fetch(submitUrl, {
@@ -448,6 +451,7 @@ function calculateScore() {
         },
         body: JSON.stringify({ type: result.code })
       }).then(async response => {
+        console.log('submitResult response status:', response.status);
         if (!response.ok) {
           const responseText = await response.text().catch(() => '');
           throw new Error(responseText || `HTTP ${response.status}`);
