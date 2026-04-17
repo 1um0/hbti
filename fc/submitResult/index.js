@@ -56,11 +56,7 @@ function parseBody(request) {
     }
   }
 
-  if (request.body == null) {
-    return {};
-  }
-
-  // Handle case where request.body is a string (raw JSON)
+  // Handle direct body string (raw JSON body)
   if (typeof request.body === 'string' && request.body.trim()) {
     try {
       return JSON.parse(request.body);
@@ -69,9 +65,9 @@ function parseBody(request) {
     }
   }
 
-  // Handle case where request.body is already an object
-  if (typeof request.body === 'object' && !Buffer.isBuffer(request.body)) {
-    // If body has a nested 'body' string field (阿里云API Gateway format), parse it
+  // Handle case where body is nested inside request (API Gateway format with request.body.body)
+  if (typeof request.body === 'object' && request.body !== null) {
+    // Nested body string (阿里云 API Gateway)
     if (typeof request.body.body === 'string' && request.body.body.trim()) {
       try {
         return JSON.parse(request.body.body);
@@ -79,24 +75,22 @@ function parseBody(request) {
         return request.body;
       }
     }
-    // If body has nested 'body' object (some API Gateway formats)
+    // Nested body object
     if (typeof request.body.body === 'object' && request.body.body !== null) {
       return request.body.body;
     }
-    return request.body;
   }
 
-  const raw = Buffer.isBuffer(request.body) ? request.body.toString('utf8') : String(request.body);
-
-  if (!raw.trim()) {
-    return {};
+  // Handle the case where request itself contains the body directly (some HTTP triggers)
+  if (request.body === undefined && typeof request.bodyString === 'string') {
+    try {
+      return JSON.parse(request.bodyString);
+    } catch (error) {
+      return {};
+    }
   }
 
-  try {
-    return JSON.parse(raw);
-  } catch (error) {
-    return {};
-  }
+  return {};
 }
 
 function parseEventBody(event) {
@@ -367,6 +361,14 @@ exports.handler = async (...args) => {
   const hasTypeInBody = body && typeof body.type === 'string' && body.type.trim().length > 0;
   const allowConsoleFallback = method === 'GET' && hasTypeInBody;
 
+  console.log('DEBUG parseBody result:', JSON.stringify({
+    bodyType: typeof body,
+    bodyKeys: body && typeof body === 'object' ? Object.keys(body) : [],
+    bodyType: body && body.type,
+    requestBodyType: typeof (request && request.body),
+    requestBodyBodyType: request && request.body && typeof request.body.body
+  }));
+
   if (method && method !== 'POST' && !allowConsoleFallback) {
     return sendJson(isWebShape ? response : null, 405, {
       ok: false,
@@ -389,8 +391,8 @@ exports.handler = async (...args) => {
         bodyKeys: body && typeof body === 'object' ? Object.keys(body) : [],
         bodyTypeValue: body && body.type,
         requestBodyType: typeof (request && request.body),
-        hasBodyBody: !!(request && request.body && request.body.body),
         requestBodyBodyType: request && request.body && typeof request.body.body,
+        requestBodyBodyValue: request && request.body && request.body.body,
         queryType: request && (
           (request.queryParameters && request.queryParameters.type) ||
           (request.queryStringParameters && request.queryStringParameters.type) ||
