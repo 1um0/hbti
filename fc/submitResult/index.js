@@ -11,10 +11,6 @@ function getTableName() {
   return process.env.OTS_TABLE || 'hbti_stats';
 }
 
-function getCorsOrigin() {
-  return process.env.ALLOW_ORIGIN || '*';
-}
-
 function createClient(context) {
   const credentials = (context && context.credentials) || {};
   const accessKeyId = credentials.accessKeyId || process.env.ALIBABA_CLOUD_ACCESS_KEY_ID;
@@ -186,47 +182,45 @@ function extractType(request, body) {
   ]).toUpperCase();
 }
 
-function setCorsHeaders(response) {
-  response.setHeader('Content-Type', 'application/json; charset=utf-8');
-  response.setHeader('Access-Control-Allow-Origin', getCorsOrigin());
-  response.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-}
-
 function sendJson(response, statusCode, body) {
+  const headers = {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Expose-Headers': 'Date,x-fc-request-id'
+  };
+
   if (!response || typeof response.setHeader !== 'function' || typeof response.send !== 'function') {
     return {
       statusCode,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Access-Control-Allow-Origin': getCorsOrigin(),
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      },
+      headers,
       body: JSON.stringify(body)
     };
   }
 
-  setCorsHeaders(response);
+  Object.keys(headers).forEach(key => response.setHeader(key, headers[key]));
   response.statusCode = statusCode;
   response.send(JSON.stringify(body));
   return null;
 }
 
 function sendEmpty(response, statusCode) {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  };
+
   if (!response || typeof response.setHeader !== 'function' || typeof response.send !== 'function') {
     return {
       statusCode,
-      headers: {
-        'Access-Control-Allow-Origin': getCorsOrigin(),
-        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-      },
+      headers,
       body: ''
     };
   }
 
-  setCorsHeaders(response);
+  Object.keys(headers).forEach(key => response.setHeader(key, headers[key]));
   response.statusCode = statusCode;
   response.send('');
   return null;
