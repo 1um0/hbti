@@ -3,7 +3,7 @@
 import logging
 import time
 from typing import Dict
-from tablestore import OTSClient, Condition, RowExistenceExpectation
+from tablestore import OTSClient, Condition, RowExistenceExpectation, Row
 
 from ..config import config
 
@@ -24,6 +24,8 @@ def normalize_long_value(raw_value) -> int:
             return int(parsed) if parsed.is_integer() else 0
         except (ValueError, TypeError):
             return 0
+    if isinstance(raw_value, tuple) and len(raw_value) >= 2:
+        raw_value = raw_value[1]
     if hasattr(raw_value, 'toNumber'):
         try:
             return int(raw_value.toNumber())
@@ -41,6 +43,9 @@ def find_attribute_value(attributes: list, key: str):
     for item in attributes:
         if not item:
             continue
+        if isinstance(item, tuple) and len(item) >= 2:
+            if item[0] == key:
+                return item[1]
         if isinstance(item, dict):
             if 'name' in item and item['name'] == key:
                 return item.get('value')
@@ -55,14 +60,12 @@ def find_attribute_value(attributes: list, key: str):
 
 def create_client() -> OTSClient:
     """Create Tablestore client from environment configuration."""
-    options = {
-        'endpoint': config.OTS_ENDPOINT,
-        'instancename': config.OTS_INSTANCE,
-    }
-    if config.OTS_ACCESS_KEY_ID and config.OTS_ACCESS_KEY_SECRET:
-        options['access_key_id'] = config.OTS_ACCESS_KEY_ID
-        options['access_key_secret'] = config.OTS_ACCESS_KEY_SECRET
-    return OTSClient(options)
+    return OTSClient(
+        end_point=config.OTS_ENDPOINT,
+        instance_name=config.OTS_INSTANCE,
+        access_key_id=config.OTS_ACCESS_KEY_ID if config.OTS_ACCESS_KEY_ID else None,
+        access_key_secret=config.OTS_ACCESS_KEY_SECRET if config.OTS_ACCESS_KEY_SECRET else None,
+    )
 
 
 async def increment_type_count(type_code: str) -> int:
@@ -92,10 +95,10 @@ async def increment_type_count(type_code: str) -> int:
         ('updatedAt', int(time.time() * 1000))
     ]
 
+    row = Row(primary_key, attribute_columns)
     client.put_row(
         table_name=config.OTS_TABLE,
-        primary_key=primary_key,
-        attribute_columns=attribute_columns,
+        row=row,
         condition=Condition(RowExistenceExpectation.IGNORE)
     )
     return next_count

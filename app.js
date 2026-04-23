@@ -19,8 +19,8 @@ const HBTI_CONFIG = {
     draftAnswers: 'hbti_draft_answers'
   },
   apiEndpoints: {
-    submitResult: 'https://submitresult-melkcrmbnb.cn-hangzhou.fcapp.run',
-    getStats: 'https://getstats-dytffsjluv.cn-hangzhou.fcapp.run'
+    submitResult: 'https://api.hbti.top/submitResult',
+    getStats: 'https://api.hbti.top/getStats'
   },
   questionsPerDimension: 8,
   totalQuestions: 32
