@@ -61,9 +61,9 @@ function parseBody(request) {
     }
   }
 
-  // Handle case where body is nested inside request (API Gateway format with request.body.body)
+  // Handle case where body is an object (阿里云 API Gateway format with nested body)
   if (typeof request.body === 'object' && request.body !== null) {
-    // Nested body string (阿里云 API Gateway)
+    // If request.body has a body property that is a string, parse it
     if (typeof request.body.body === 'string' && request.body.body.trim()) {
       try {
         return JSON.parse(request.body.body);
@@ -71,9 +71,13 @@ function parseBody(request) {
         return request.body;
       }
     }
-    // Nested body object
+    // If request.body has a body property that is an object, return it
     if (typeof request.body.body === 'object' && request.body.body !== null) {
       return request.body.body;
+    }
+    // If request.body has type directly (not an API Gateway object), return it
+    if (request.body.type && !request.body.version && !request.body.rawPath && !request.body.body) {
+      return request.body;
     }
   }
 
@@ -96,6 +100,64 @@ function parseBody(request) {
 
 function parseEventBody(event) {
   if (event == null) {
+    return {};
+  }
+
+  console.error('DEBUG parseEventBody event.body type:', typeof event.body, 'value:', typeof event.body === 'string' ? event.body.slice(0, 50) : event.body);
+
+  // URGENT: if event.body is a string (API Gateway HTTP trigger), parse it directly
+  // This must come FIRST because array-like object check below may exit early
+  if (typeof event.body === 'string' && event.body.trim()) {
+    try {
+      return JSON.parse(event.body);
+    } catch (error) {
+      return {};
+    }
+  }
+
+  // Handle array-like objects from FC test panel: has numeric keys AND httpMethod/body
+  // This is NOT an actual array, but an object with array indices
+  if (event && typeof event === 'object' && !Array.isArray(event)) {
+    const keys = Object.keys(event);
+    const hasNumericKeys = keys.some(k => !isNaN(Number(k)));
+    if (hasNumericKeys && event.httpMethod && event.body !== undefined) {
+      if (typeof event.body === 'string' && event.body.trim()) {
+        try {
+          return JSON.parse(event.body);
+        } catch (error) {
+          return {};
+        }
+      }
+      if (typeof event.body === 'object' && event.body !== null) {
+        return event.body;
+      }
+    }
+  }
+
+  // Handle actual arrays from FC test panel
+  if (Array.isArray(event)) {
+    // First check if the array itself has httpMethod and body (common FC test panel format)
+    if (event.httpMethod && event.body !== undefined) {
+      if (typeof event.body === 'string' && event.body.trim()) {
+        try {
+          return JSON.parse(event.body);
+        } catch (error) {
+          return {};
+        }
+      }
+      if (typeof event.body === 'object' && event.body !== null) {
+        return event.body;
+      }
+    }
+    // Try each element until we find one that has a body or looks like an event
+    for (const item of event) {
+      if (item && typeof item === 'object') {
+        const parsed = parseEventBody(item);
+        if (Object.keys(parsed).length > 0) {
+          return parsed;
+        }
+      }
+    }
     return {};
   }
 
@@ -124,7 +186,21 @@ function parseEventBody(event) {
       }
     }
 
-    if (typeof raw === 'object') {
+    // Check if raw is an object with a body property that is a string (阿里云 API Gateway format)
+    if (typeof raw === 'object' && raw !== null) {
+      // If raw.body is a string, parse it as JSON
+      if (typeof raw.body === 'string' && raw.body.trim()) {
+        try {
+          return JSON.parse(raw.body);
+        } catch (error) {
+          return raw;
+        }
+      }
+      // If raw.body is an object, return it directly
+      if (typeof raw.body === 'object' && raw.body !== null) {
+        return raw.body;
+      }
+      // Otherwise return the raw object
       return raw;
     }
 
@@ -142,14 +218,30 @@ function parseEventBody(event) {
     return event;
   }
 
+  // If event looks like it IS the body (has httpMethod and body properties directly)
+  if (event.httpMethod && event.body) {
+    // Try to parse body if it's a string
+    if (typeof event.body === 'string') {
+      try {
+        return JSON.parse(event.body);
+      } catch (error) {
+        return {};
+      }
+    }
+    return event.body;
+  }
+
   return {};
 }
 
 function getMethod(request) {
   if (!request) return '';
+  // Handle array-like objects (FC test panel) that have httpMethod directly on them
+  if (typeof request.httpMethod === 'string') {
+    return request.httpMethod.toUpperCase();
+  }
   return String(
     request.method ||
-    request.httpMethod ||
     (request.requestContext && request.requestContext.http && request.requestContext.http.method) ||
     ''
   ).toUpperCase();
@@ -191,39 +283,20 @@ function sendJson(response, statusCode, body) {
     'Access-Control-Expose-Headers': 'Date,x-fc-request-id'
   };
 
-  if (!response || typeof response.setHeader !== 'function' || typeof response.send !== 'function') {
-    return {
-      statusCode,
-      headers,
-      body: JSON.stringify(body)
-    };
-  }
-
-  Object.keys(headers).forEach(key => response.setHeader(key, headers[key]));
-  response.statusCode = statusCode;
-  response.send(JSON.stringify(body));
-  return null;
-}
-
-function sendEmpty(response, statusCode) {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+  const result = {
+    statusCode,
+    headers,
+    body: JSON.stringify(body)
   };
 
-  if (!response || typeof response.setHeader !== 'function' || typeof response.send !== 'function') {
-    return {
-      statusCode,
-      headers,
-      body: ''
-    };
+  // If response has web-shaped methods, use them
+  if (response && typeof response.setHeader === 'function' && typeof response.send === 'function') {
+    Object.keys(headers).forEach(key => response.setHeader(key, headers[key]));
+    response.statusCode = statusCode;
+    response.send(result.body);
   }
 
-  Object.keys(headers).forEach(key => response.setHeader(key, headers[key]));
-  response.statusCode = statusCode;
-  response.send('');
-  return null;
+  return result;
 }
 
 function normalizeNumericValue(rawValue) {
@@ -347,14 +420,29 @@ function incrementTypeAsync(client, type) {
 }
 
 exports.handler = async (...args) => {
+  console.error('HANDLER CALLED argsLen:', args.length);
   const request = args[0];
   const response = args[1];
   const context = args[2] || args[1];
-  const method = getMethod(request);
   const isWebShape = response && typeof response.setHeader === 'function' && typeof response.send === 'function';
+  console.error('HANDLER isWebShape:', isWebShape);
+
+  // Handle OPTIONS preflight FIRST - OPTIONS can come without httpMethod set
+  // Check via standard method detection
+  const rawMethod = request && (request.method || request.httpMethod || (request.requestContext && request.requestContext.http && request.requestContext.http.method) || '');
+  const method = String(rawMethod || '').toUpperCase();
 
   if (method === 'OPTIONS') {
-    return sendEmpty(isWebShape ? response : null, 204);
+    return {
+      statusCode: 204,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Expose-Headers': 'Date,x-fc-request-id'
+      },
+      body: ''
+    };
   }
 
   // Some FC test panels send non-standard event shapes without method.
@@ -375,34 +463,58 @@ exports.handler = async (...args) => {
   const type = extractType(request, body);
 
   if (!VALID_CODES.includes(type)) {
+    // Debug info to understand request structure
+    const argsArrayLength = args.length;
+    const args0Type = typeof args[0];
+    const args0IsArray = Array.isArray(args[0]);
+    const args0Keys = args[0] && typeof args[0] === 'object' && !Array.isArray(args[0]) ? Object.keys(args[0]).slice(0, 10) : String(args[0]).slice(0, 50);
+    const args1Type = typeof args[1];
+
+    const debugInfo = {
+      gotMethod: method || '(empty)',
+      isWebShape,
+      bodyType: typeof body,
+      bodyKeys: body && typeof body === 'object' ? Object.keys(body) : [],
+      bodyTypeValue: body && body.type,
+      bodyBodyType: body && body.body != null ? typeof body.body : 'undefined',
+      queryType: request && (
+        (request.queryParameters && request.queryParameters.type) ||
+        (request.queryStringParameters && request.queryStringParameters.type) ||
+        (request.queries && request.queries.type) ||
+        ''
+      ),
+      // Debug: args structure
+      argsArrayLength,
+      args0Type,
+      args0IsArray,
+      args0Keys,
+      args1Type
+    };
+
+    console.error('DEBUG 400, type extracted:', type, 'body:', JSON.stringify(body), 'requestKeys:', request && typeof request === 'object' ? Object.keys(request).slice(0, 10) : 'n/a');
     return sendJson(isWebShape ? response : null, 400, {
       ok: false,
       error: 'Invalid type',
       allowed: VALID_CODES,
-      debug: {
-        gotMethod: method || '(empty)',
-        isWebShape,
-        bodyType: typeof body,
-        bodyKeys: body && typeof body === 'object' ? Object.keys(body) : [],
-        bodyTypeValue: body && body.type,
-        requestKeys: request && typeof request === 'object' ? Object.keys(request) : [],
-        requestBodyType: typeof (request && request.body),
-        requestRawBody: typeof request === 'object' ? JSON.stringify(request.body).substring(0, 200) : String(request.body).substring(0, 200),
-        queryType: request && (
-          (request.queryParameters && request.queryParameters.type) ||
-          (request.queryStringParameters && request.queryStringParameters.type) ||
-          (request.queries && request.queries.type) ||
-          ''
-        ),
-        topLevelEventType: request && request.type ? request.type : ''
-      }
+      debug: debugInfo
     });
   }
 
-  const client = createClient(context);
+  let client;
+  try {
+    client = createClient(context);
+  } catch (err) {
+    console.error('createClient error:', err);
+    return sendJson(isWebShape ? response : null, 500, {
+      ok: false,
+      error: 'Failed to initialize database client',
+      detail: err.message || String(err)
+    });
+  }
 
   try {
     const writeResult = await incrementTypeAsync(client, type);
+    console.error('DEBUG write success, type:', type, 'nextCount:', writeResult && writeResult.nextCount);
     return sendJson(isWebShape ? response : null, 200, {
       ok: true,
       type,

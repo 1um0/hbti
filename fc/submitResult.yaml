@@ -30,6 +30,7 @@ resources:
         - triggerConfig:
             methods:
               - POST
+              - OPTIONS
             authType: anonymous
             disableURLInternet: false
           triggerName: trigger-4ha11c2b

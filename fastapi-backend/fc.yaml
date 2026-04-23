@@ -1,0 +1,51 @@
+# Serverless Devs FC部署配置
+edition: 1.0.0
+name: hbti-fastapi
+access: default
+
+vars:
+  region: cn-hangzhou
+  service:
+    name: hbti
+    description: HBTI 徒步人格测试 FastAPI 后端
+    internetAccess: true
+
+services:
+  hbti-api:
+    component: fc
+    actions:
+      pre-deploy:
+        - run: pip install -r requirements.txt
+          path: ./
+    props:
+      region: ${vars.region}
+      service: ${vars.service}
+      function:
+        name: hbti-api
+        description: HBTI API 函数
+        runtime: python3.11
+        codeUri: ./
+        handler: index.handler
+        memorySize: 256
+        timeout: 30
+        environmentVariables:
+          OTS_ENDPOINT: ${env(OTS_ENDPOINT)}
+          OTS_INSTANCE: ${env(OTS_INSTANCE)}
+          OTS_TABLE: ${env(OTS_TABLE)}
+          OTS_ACCESS_KEY_ID: ${env(OTS_ACCESS_KEY_ID)}
+          OTS_ACCESS_KEY_SECRET: ${env(OTS_ACCESS_KEY_SECRET)}
+          ALLOW_ORIGIN: ${env(ALLOW_ORIGIN)}
+      triggers:
+        - name: http-trigger
+          type: http
+          config:
+            authType: anonymous
+            methods:
+              - GET
+              - POST
+              - OPTIONS
+      customDomains:
+        - name: api.hbti.top
+          protocol: HTTP
+          routeConfigs:
+            - path: /*

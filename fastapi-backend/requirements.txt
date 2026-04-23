@@ -1,0 +1,14 @@
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+pydantic>=2.6.0
+pydantic[email]>=2.6.0
+python-dotenv>=1.0.0
+sqlalchemy>=2.0.0
+pymysql>=1.1.0
+cryptography>=42.0.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# Tablestore SDK 需要从阿里云源安装
+# pip install tablestore -i https://mirrors.aliyun.com/pypi/simple/
